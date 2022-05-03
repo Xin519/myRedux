@@ -61,7 +61,7 @@ function applyMiddleware(...middlewares) {
             var chain = middlewares.map(middleware => middleware(middlewareAPI))
             // chain = [ next => action => { next(action) }, ....... ]
             const dispatchs = compose(...chain)(dispatch)
-            // 从写dispatch函数 当前函数nex() 是下一个中间件 。。。 最后一个next() 是原dispath
+            // 从写dispatch函数 当前函数next() 是下一个中间件 。。。 最后一个next() 是原dispatch
             return {
                 ...store,
                 dispatch: dispatchs
