@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="increment">+1</button>
+    <span id="box">0</span>
+    <button id="decrement">-1</button>
+
+    <script src="./index.js"></script>
+    <script src="./middlewares/logger.js"></script>
+    <script src="./middlewares/thunk.js"></script>
+    <script>
+        function enhancer(createStore) {
+            return (reducer, preloadedState) => {
+                var store = createStore(reducer, preloadedState)
+                var { dispatch } = store
+                const _dispatch = action => {
+                    if (typeof action === 'function') {
+                        return action(dispatch)
+                    }
+                    dispatch(action)
+                }
+                return { ...store, dispatch: _dispatch }
+            }
+        }
+
+        function counterReducer(state = 0, action) {
+            switch (action.type) {
+                case "increment":
+                    return state + 1;
+                case "decrement":
+                    return state - 1;
+                default:
+                    return state;
+            }
+        }
+        // 合并
+        var rootReducer = combineReducers({counter: counterReducer})
+
+        var store
+        var { getState, dispatch, subscribe } = store = createStore(rootReducer, {counter: 0}, applyMiddleware(logger, thunk))
+
+        subscribe(function () {
+            // 获取最新 state
+            const { counter } = getState()
+            document.getElementById('box').innerHTML = counter
+        })
+
+        const action = bindActionCreators({increment, decrement}, dispatch)
+        function increment() {
+            return { type: "increment" }
+        }
+
+        function decrement() {
+            return { type: "decrement" };
+        }
+
+        // document.getElementById('increment').onclick = function (dispatch) {
+        //     setTimeout(() => dispatch({ type: 'increment' }), 1000)
+        // }
+        document.getElementById('increment').onclick = function () {
+            // dispatch({ type: 'increment' })
+            action.increment()
+        }
+        document.getElementById('decrement').onclick = function () {
+            // dispatch({ type: 'decrement' })
+            action.decrement()
+        }
+
+
+    </script>
+</body>
+
+</html>
